@@ -62,6 +62,10 @@
 </head>
 <body>
     <div class="content">
+        namesRef.once('value', snapshot => {
+    names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
+    updateCounter();
+});
         <h1>Karácsonyi Név Kiválasztó</h1>
         <button onclick="pickRandomName()">Kiválasztás</button>
         <button onclick="reroll()">Újrahúzás (csak akkor, ha magadat húztad!)</button>
