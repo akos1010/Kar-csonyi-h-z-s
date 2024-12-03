@@ -69,7 +69,7 @@
                 names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
                 populateDropdown();
                 updateCounter();
-                enableButtons(); // Engedélyezzük a gombokat
+                enableButtons(); // Engedélyezzük a dropdown és a pick gombot
             })
             .catch(error => {
                 console.error("Hiba a Firebase betöltésekor: ", error);
@@ -120,6 +120,7 @@
             lastSelected = availableNames[randomIndex];
             document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
             document.getElementById('result').style.color = "red";
+            document.getElementById('pick-btn').disabled = true; // Tiltjuk a további húzást
             document.getElementById('approve-btn').disabled = false; // Engedélyezzük a jóváhagyást
         }
 
