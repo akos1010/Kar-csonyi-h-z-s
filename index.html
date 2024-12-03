@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Név Kiválasztó</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://cdn.pixabay.com/photo/2021/11/19/15/21/christmas-6809681_1280.png'); /* Háttérkép */
+            background-size: cover; /* Teljes képernyőt kitölti arányosan */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed; /* Nem mozog görgetéskor */
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .content {
+            background-color: rgba(255, 255, 255, 0.9); /* Fehér háttér, enyhén áttetsző */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            font-size: 24px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: red; /* Piros szín a szöveghez */
+        }
+        .counter {
+            font-size: 18px;
+            margin-top: 10px;
+            color: black;
+        }
+        h1 {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Karácsonyi Név Kiválasztó</h1>
+        <button onclick="pickRandomName()">Kiválasztás</button>
+        <button onclick="reroll()">Újrahúzás (csak akkor, ha magadat húztad!)</button>
+        <div class="counter" id="counter">Hátralévő nevek: 10</div>
+        <div class="result" id="result">Várakozás...</div>
+    </div>
+
+    <script>
+        // Alapértelmezett nevek listája
+        let names = ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
+        let lastSelected = null; // Legutóbb kiválasztott név tárolása
+        let tempList = [...names]; // Másolat a nevekről, amit újrahúzáshoz használunk
+
+        // Számláló frissítése
+        function updateCounter() {
+            const counterDiv = document.getElementById('counter');
+            counterDiv.textContent = `Hátralévő nevek: ${names.length}`;
+        }
+
+        // Véletlenszerű név kiválasztása és eltávolítása
+        function pickRandomName() {
+            if (names.length === 0) {
+                document.getElementById('result').textContent = "Nincs több név!";
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * names.length);
+            lastSelected = names[randomIndex];
+            document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
+            document.getElementById('result').style.color = "red"; // Piros szín
+            names.splice(randomIndex, 1); // Törli a kiválasztott nevet
+            tempList = [...names]; // Frissíti az újrahúzáshoz használt másolatot
+            updateCounter(); // Számláló frissítése
+        }
+
+        // Újrahúzás egy másik névvel
+        function reroll() {
+            if (tempList.length === 0) {
+                document.getElementById('result').textContent = "Nincs több név az újrahúzáshoz!";
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * tempList.length);
+            const rerolledName = tempList[randomIndex];
+            document.getElementById('result').textContent = `Újrahúzott név: ${rerolledName}`;
+            tempList.splice(randomIndex, 1); // Törli a nevet az újrahúzáshoz használt másolatból
+        }
+
+        // Az oldal betöltésekor frissítjük a számlálót
+        updateCounter();
+    </script>
+</body>
+</html>
