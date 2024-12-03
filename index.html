@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body {
-            background: url('https://cdn.pixabay.com/photo/2021/11/19/15/21/christmas-6809681_1280.png') no-repeat center center fixed;
+            background: url('image.png') no-repeat center center fixed;
             background-size: cover;
             font-family: Arial, sans-serif;
             color: white;
@@ -33,7 +33,7 @@
     <h1>Név Randomizáló</h1>
     <div id="result">Kattints a gombra egy név kiválasztásához!</div>
     <div id="controls">
-        <button id="pick-btn" onclick="pickRandomName()">Név kiválasztása</button>
+        <button id="pick-btn" onclick="pickRandomName()" disabled>Név kiválasztása</button>
         <button id="reroll-btn" onclick="rerollName()" disabled>Újrahúzás (csak ha magadat húztad)</button>
     </div>
     <div id="counter"></div>
@@ -54,23 +54,31 @@
         const namesRef = database.ref('names');
 
         // Változók
-        let names = [];
+        let names = null; // A lista kezdetben null
         let lastSelected = null;
 
-        // Gombok alapértelmezett tiltása
-        document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        // Oldal betöltése után a Firebase-ből betöltjük a neveket
+        namesRef.once('value')
+            .then(snapshot => {
+                names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
+                updateCounter();
+                enableButtons(); // Engedélyezzük a gombokat
+            })
+            .catch(error => {
+                console.error("Hiba a Firebase betöltésekor: ", error);
+                document.getElementById('result').textContent = "Nem sikerült betölteni a neveket.";
+            });
 
-        // Nevek betöltése Firebase-ből
-        namesRef.once('value', snapshot => {
-            names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
-            updateCounter();
-            document.querySelectorAll('button').forEach(btn => btn.disabled = false); // Gombok engedélyezése
-        });
+        // Gombok alapértelmezetten tiltása
+        function enableButtons() {
+            document.getElementById('pick-btn').disabled = false;
+            document.getElementById('reroll-btn').disabled = true; // Csak akkor engedélyezzük, ha van utoljára húzott név
+        }
 
         // Név kiválasztása
         function pickRandomName() {
             if (!names || names.length === 0) {
-                document.getElementById('result').textContent = "A nevek még betöltés alatt állnak, vagy nincsenek elérhető nevek!";
+                document.getElementById('result').textContent = "Nincs több elérhető név.";
                 return;
             }
 
@@ -79,7 +87,7 @@
             document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
             document.getElementById('result').style.color = "red";
             names.splice(randomIndex, 1); // Törli a kiválasztott nevet
-            namesRef.set(names); // Frissítés a Firebase-ben
+            namesRef.set(names); // Firebase frissítése
             updateCounter();
             document.getElementById('reroll-btn').disabled = false; // Újrahúzás engedélyezése
         }
@@ -89,16 +97,17 @@
             if (lastSelected) {
                 names.push(lastSelected); // Visszateszi az előző nevet
                 lastSelected = null;
-                namesRef.set(names); // Frissítés a Firebase-ben
+                namesRef.set(names); // Firebase frissítése
                 updateCounter();
+                pickRandomName(); // Új nevet húz
             }
-            pickRandomName(); // Új nevet húz
         }
 
         // Számláló frissítése
         function updateCounter() {
-            document.getElementById('counter').textContent = `Még ${names.length} név van hátra.`;
+            document.getElementById('counter').textContent = `Még ${names ? names.length : 0} név van hátra.`;
         }
     </script>
 </body>
 </html>
+
