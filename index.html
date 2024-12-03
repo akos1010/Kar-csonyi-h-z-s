@@ -33,7 +33,18 @@
     <h1>Név Randomizáló</h1>
     <div>
         <label for="self-select">Válaszd ki magad:</label>
-        <select id="self-select"></select>
+        <select id="self-select">
+            <option value="Ákos">Ákos</option>
+            <option value="Bálint">Bálint</option>
+            <option value="Karcsi">Karcsi</option>
+            <option value="Gergő">Gergő</option>
+            <option value="Máté">Máté</option>
+            <option value="Mlado">Mlado</option>
+            <option value="Levi">Levi</option>
+            <option value="Nick">Nick</option>
+            <option value="Csani">Csani</option>
+            <option value="Zoli">Zoli</option>
+        </select>
     </div>
     <div id="result">Kattints a gombra egy név kiválasztásához!</div>
     <div id="controls">
@@ -67,36 +78,22 @@
         namesRef.once('value')
             .then(snapshot => {
                 names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
-                populateDropdown();
                 updateCounter();
-                enableButtons(); // Engedélyezzük a dropdown és a pick gombot
+                enablePickButton(); // Engedélyezzük a pick gombot
             })
             .catch(error => {
                 console.error("Hiba a Firebase betöltésekor: ", error);
                 document.getElementById('result').textContent = "Nem sikerült betölteni a neveket.";
             });
 
-        // Dropdown feltöltése
-        function populateDropdown() {
-            const dropdown = document.getElementById('self-select');
-            names.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                dropdown.appendChild(option);
-            });
-            dropdown.addEventListener('change', () => {
-                selfName = dropdown.value;
-                enablePickButton();
-            });
-        }
+        // Dropdown kiválasztott értékének figyelése
+        const dropdown = document.getElementById('self-select');
+        dropdown.addEventListener('change', () => {
+            selfName = dropdown.value;
+            enablePickButton();
+        });
 
         // Gombok alapértelmezetten tiltása
-        function enableButtons() {
-            document.getElementById('pick-btn').disabled = true;
-            document.getElementById('approve-btn').disabled = true;
-        }
-
         function enablePickButton() {
             if (selfName) {
                 document.getElementById('pick-btn').disabled = false;
