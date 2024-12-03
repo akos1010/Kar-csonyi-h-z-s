@@ -4,109 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Név Randomizáló</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body {
-            background: url('https://cdn.pixabay.com/photo/2021/11/19/15/21/christmas-6809681_1280.png') no-repeat center center fixed;
-            background-size: cover;
             font-family: Arial, sans-serif;
+            background-image: url('https://cdn.pixabay.com/photo/2021/11/19/15/21/christmas-6809681_1280.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: white;
             text-align: center;
         }
-        #result {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
+        h1 {
+            margin-top: 20%;
         }
-        #controls {
-            margin-top: 20px;
+        #nameForm, #acceptButton {
+            display: none;
         }
         button {
             padding: 10px 20px;
             font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
             cursor: pointer;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+        #result {
+            font-size: 24px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+
     <h1>Név Randomizáló</h1>
-    <div id="result">Kattints a gombra egy név kiválasztásához!</div>
-    <div id="controls">
-        <button id="pick-btn" onclick="pickRandomName()" disabled>Név kiválasztása</button>
-        <button id="reroll-btn" onclick="rerollName()" disabled>Újrahúzás (csak ha magadat húztad)</button>
+
+    <div id="nameForm">
+        <label for="username">Add meg a neved:</label>
+        <select id="username">
+            <!-- A nevek itt lesznek dinamikusan betöltve -->
+        </select>
+        <button onclick="submitName()">Elküld</button>
     </div>
-    <div id="counter"></div>
 
+    <div id="result"></div>
+    <button id="pickNameButton" onclick="pickRandomName()">Név kiválasztása</button>
+    <button id="acceptButton" onclick="acceptName()">Elfogadom a nevet</button>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js"></script>
     <script>
-        // Firebase inicializáció
+        // Firebase konfiguráció
         const firebaseConfig = {
-                      apiKey: "AIzaSyAuHCMWsyPVpOmQy9UlrSraMGFl0nEslco",
-                      authDomain: "karihuzas-d848c.firebaseapp.com",
-                      databaseURL: "https://karihuzas-d848c-default-rtdb.firebaseio.com",
-                      projectId: "karihuzas-d848c",
-                      storageBucket: "karihuzas-d848c.firebasestorage.app",
-                      messagingSenderId: "131356054270",
-                      appId: "1:131356054270:web:2996f46f0d6e0db9b1cbaf",
-                      measurementId: "G-GB3BFBH2ZN"
-};
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const namesRef = database.ref('names');
+            apiKey: "AIzaSyAuHCMWsyPVpOmQy9UlrSraMGFl0nEslco",
+            authDomain: "karihuzas-d848c.firebaseapp.com",
+            databaseURL: "https://karihuzas-d848c-default-rtdb.firebaseio.com",
+            projectId: "karihuzas-d848c",
+            storageBucket: "karihuzas-d848c.firebasestorage.app",
+            messagingSenderId: "131356054270",
+            appId: "1:131356054270:web:2996f46f0d6e0db9b1cbaf",
+            measurementId: "G-GB3BFBH2ZN"
+        };
 
-        // Változók
-        let names = null; // A lista kezdetben null
-        let lastSelected = null;
+        // Inicializálás
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(app);
 
-        // Oldal betöltése után a Firebase-ből betöltjük a neveket
-        namesRef.once('value')
-            .then(snapshot => {
-                names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
-                updateCounter();
-                enableButtons(); // Engedélyezzük a gombokat
-            })
-            .catch(error => {
-                console.error("Hiba a Firebase betöltésekor: ", error);
-                document.getElementById('result').textContent = "Nem sikerült betölteni a neveket.";
+        let username = '';
+        let pickedName = '';
+
+        // Oldal betöltésekor meghívott funkció
+        window.onload = function() {
+            loadNames(); // Nevek betöltése
+            document.getElementById('nameForm').style.display = 'block';
+        };
+
+        // Nevek betöltése a Firebase-ből a legördülő menübe
+        function loadNames() {
+            const namesRef = database.ref('names');
+            namesRef.once('value').then(function(snapshot) {
+                const names = snapshot.val() || [];
+                const dropdown = document.getElementById('username');
+                names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    dropdown.appendChild(option);
+                });
             });
-
-        // Gombok alapértelmezetten tiltása
-        function enableButtons() {
-            document.getElementById('pick-btn').disabled = false;
-            document.getElementById('reroll-btn').disabled = true; // Csak akkor engedélyezzük, ha van utoljára húzott név
         }
 
         // Név kiválasztása
+        function submitName() {
+            username = document.getElementById('username').value;
+            if (username.trim() !== '') {
+                document.getElementById('nameForm').style.display = 'none';
+                document.getElementById('pickNameButton').style.display = 'block';
+            } else {
+                alert('Kérlek add meg a neved!');
+            }
+        }
+
+        // Véletlenszerű név kiválasztása
         function pickRandomName() {
-            if (!names || names.length === 0) {
-                document.getElementById('result').textContent = "Nincs több elérhető név.";
-                return;
-            }
+            const namesRef = database.ref('names');
+            namesRef.once('value').then(function(snapshot) {
+                const names = snapshot.val() || [];
+                if (names.length > 0) {
+                    // A felhasználó nevét eltávolítjuk a listából
+                    const filteredNames = names.filter(name => name !== username);
+                    if (filteredNames.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * filteredNames.length);
+                        pickedName = filteredNames[randomIndex];
+                        document.getElementById('result').innerText = `A kiválasztott név: ${pickedName}`;
+                        document.getElementById('pickNameButton').style.display = 'none';
+                        document.getElementById('acceptButton').style.display = 'block';
 
-            const randomIndex = Math.floor(Math.random() * names.length);
-            lastSelected = names[randomIndex];
-            document.getElementById('result').textContent = Az ember, akit ajándékozol: ${lastSelected};
-            document.getElementById('result').style.color = "red";
-            names.splice(randomIndex, 1); // Törli a kiválasztott nevet
-            namesRef.set(names); // Firebase frissítése
-            updateCounter();
-            document.getElementById('reroll-btn').disabled = false; // Újrahúzás engedélyezése
+                        // A kiválasztott név eltávolítása a Firebase-ből
+                        names.splice(names.indexOf(pickedName), 1);
+                        namesRef.set(names);
+                    } else {
+                        alert('Nincs több név!');
+                    }
+                }
+            });
         }
 
-        // Újrahúzás
-        function rerollName() {
-            if (lastSelected) {
-                names.push(lastSelected); // Visszateszi az előző nevet
-                lastSelected = null;
-                namesRef.set(names); // Firebase frissítése
-                updateCounter();
-                pickRandomName(); // Új nevet húz
-            }
-        }
+        // Név elfogadása
+        function acceptName() {
+            const userAcceptedNameRef = database.ref('acceptedNames');
+            userAcceptedNameRef.push({ username: username, name: pickedName });
 
-        // Számláló frissítése
-        function updateCounter() {
-            document.getElementById('counter').textContent = Még ${names ? names.length : 0} név van hátra.;
+            // Név kiválasztása után az elfogadott név rögzítése
+            document.getElementById('result').innerText = `A kiválasztott nevet elfogadtad: ${pickedName}`;
+            document.getElementById('acceptButton').disabled = true;
+            alert(`Neved: ${username}, a választott név: ${pickedName}`);
         }
     </script>
 </body>
