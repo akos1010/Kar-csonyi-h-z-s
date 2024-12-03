@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,44 +15,66 @@
             color: white;
             text-align: center;
         }
+
         #result {
             margin-top: 20px;
             font-size: 24px;
             font-weight: bold;
         }
+
+        #result2 {
+            margin-top: 6px;
+            font-size: 18px;
+        }
+
         #controls {
             margin-top: 20px;
         }
+
         button {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
         }
+
+        #approve-btn {
+            background-color: crimson;
+        }
+
+        #container {
+            padding: 20px;
+            background-color: rgb(24, 71, 65);
+        }
     </style>
 </head>
+
 <body>
-    <h1>Név Randomizáló</h1>
-    <div>
-        <label for="self-select">Válaszd ki magad:</label>
-        <select id="self-select">
-            <option value="Ákos">Ákos</option>
-            <option value="Bálint">Bálint</option>
-            <option value="Karcsi">Karcsi</option>
-            <option value="Gergő">Gergő</option>
-            <option value="Máté">Máté</option>
-            <option value="Mlado">Mlado</option>
-            <option value="Levi">Levi</option>
-            <option value="Nick">Nick</option>
-            <option value="Csani">Csani</option>
-            <option value="Zoli">Zoli</option>
-        </select>
+    <div id="container">
+        <h1>Név Randomizáló</h1>
+        <div>
+            <label for="self-select">Válaszd ki magad:</label>
+            <select id="self-select">
+                <option value="Ákos">Ákos</option>
+                <option value="Bálint">Bálint</option>
+                <option value="Karcsi">Karcsi</option>
+                <option value="Gergő">Gergő</option>
+                <option value="Máté">Máté</option>
+                <option value="Mlado">Mlado</option>
+                <option value="Levi">Levi</option>
+                <option value="Nick">Nick</option>
+                <option value="Csani">Csani</option>
+                <option value="Zoli">Zoli</option>
+            </select>
+        </div>
+        <div id="result2">Válaszd ki magadat felül mielőtt húzol!</div>
+        <div id="result">Kattints a gombra egy név kiválasztásához!</div>
+        <div id="result2">MIUTÁN KIÍRTA A NEVET NYOMJ RÁ A JÓVÁHAGYÁSRA!</div>
+        <div id="controls">
+            <button id="pick-btn" onclick="pickRandomName()" disabled>Név kiválasztása</button>
+            <button id="approve-btn" onclick="approveName()" disabled>JÓVÁHAGYÁS</button>
+        </div>
+        <div id="counter"></div>
     </div>
-    <div id="result">Kattints a gombra egy név kiválasztásához!</div>
-    <div id="controls">
-        <button id="pick-btn" onclick="pickRandomName()" disabled>Név kiválasztása</button>
-        <button id="approve-btn" onclick="approveName()" disabled>Jóváhagyás</button>
-    </div>
-    <div id="counter"></div>
 
     <script>
         // Firebase inicializáció
@@ -139,4 +162,5 @@
         }
     </script>
 </body>
+
 </html>
