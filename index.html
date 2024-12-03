@@ -107,18 +107,21 @@
         }
 
         function pickRandomName() {
-            if (names.length === 0) {
-                document.getElementById('result').textContent = "Nincs több név!";
-                return;
-            }
-            const randomIndex = Math.floor(Math.random() * names.length);
-            lastSelected = names[randomIndex];
-            document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
-            document.getElementById('result').style.color = "red"; // Piros szín
-            names.splice(randomIndex, 1); // Törli a kiválasztott nevet
-            namesRef.set(names); // Frissítjük az adatokat a Firebase-ben
-            updateCounter();
-        }
+    // Ellenőrizzük, hogy a `names` létezik és nem üres
+    if (!names || names.length === 0) {
+        document.getElementById('result').textContent = "A nevek még betöltés alatt állnak, vagy nincsenek elérhető nevek!";
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * names.length);
+    lastSelected = names[randomIndex];
+    document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
+    document.getElementById('result').style.color = "red"; // Piros szín
+    names.splice(randomIndex, 1); // Törli a kiválasztott nevet
+    namesRef.set(names); // Frissítjük az adatokat a Firebase-ben
+    updateCounter();
+}
+        
 
         function reroll() {
             if (names.length === 0) {
