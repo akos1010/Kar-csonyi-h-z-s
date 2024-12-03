@@ -45,7 +45,9 @@
 
     <div id="nameForm">
         <label for="username">Add meg a neved:</label>
-        <input type="text" id="username" placeholder="Írd be a neved">
+        <select id="username">
+            <!-- A nevek itt lesznek dinamikusan betöltve -->
+        </select>
         <button onclick="submitName()">Elküld</button>
     </div>
 
@@ -56,16 +58,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js"></script>
     <script>
-       const firebaseConfig = {
-  apiKey: "AIzaSyAuHCMWsyPVpOmQy9UlrSraMGFl0nEslco",
-  authDomain: "karihuzas-d848c.firebaseapp.com",
-  databaseURL: "https://karihuzas-d848c-default-rtdb.firebaseio.com",
-  projectId: "karihuzas-d848c",
-  storageBucket: "karihuzas-d848c.firebasestorage.app",
-  messagingSenderId: "131356054270",
-  appId: "1:131356054270:web:2996f46f0d6e0db9b1cbaf",
-  measurementId: "G-GB3BFBH2ZN"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuHCMWsyPVpOmQy9UlrSraMGFl0nEslco",
+            authDomain: "karihuzas-d848c.firebaseapp.com",
+            databaseURL: "https://karihuzas-d848c-default-rtdb.firebaseio.com",
+            projectId: "karihuzas-d848c",
+            storageBucket: "karihuzas-d848c.firebasestorage.app",
+            messagingSenderId: "131356054270",
+            appId: "1:131356054270:web:2996f46f0d6e0db9b1cbaf",
+            measurementId: "G-GB3BFBH2ZN"
+        };
 
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database(app);
@@ -75,8 +77,24 @@
 
         // Show the name form on page load
         window.onload = function() {
+            loadNames(); // Load names into the dropdown menu
             document.getElementById('nameForm').style.display = 'block';
         };
+
+        // Load names into the dropdown menu
+        function loadNames() {
+            const namesRef = database.ref('names');
+            namesRef.once('value').then(function(snapshot) {
+                const names = snapshot.val() || [];
+                const dropdown = document.getElementById('username');
+                names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    dropdown.appendChild(option);
+                });
+            });
+        }
 
         function submitName() {
             username = document.getElementById('username').value;
@@ -93,17 +111,21 @@
             namesRef.once('value').then(function(snapshot) {
                 const names = snapshot.val() || [];
                 if (names.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * names.length);
-                    pickedName = names[randomIndex];
-                    document.getElementById('result').innerText = `A kiválasztott név: ${pickedName}`;
-                    document.getElementById('pickNameButton').style.display = 'none';
-                    document.getElementById('acceptButton').style.display = 'block';
+                    // Remove the user's name from the list before picking
+                    const filteredNames = names.filter(name => name !== username);
+                    if (filteredNames.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * filteredNames.length);
+                        pickedName = filteredNames[randomIndex];
+                        document.getElementById('result').innerText = `A kiválasztott név: ${pickedName}`;
+                        document.getElementById('pickNameButton').style.display = 'none';
+                        document.getElementById('acceptButton').style.display = 'block';
 
-                    // Remove the picked name from the list in Firebase
-                    names.splice(randomIndex, 1);
-                    namesRef.set(names);
-                } else {
-                    alert('Nincs több név!');
+                        // Remove the picked name from the list in Firebase
+                        names.splice(names.indexOf(pickedName), 1);
+                        namesRef.set(names);
+                    } else {
+                        alert('Nincs több név!');
+                    }
                 }
             });
         }
@@ -121,4 +143,3 @@
     </script>
 </body>
 </html>
-
