@@ -69,19 +69,39 @@
         <div class="result" id="result">Várakozás...</div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    
     <script>
-        // Alapértelmezett nevek listája
-        let names = ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
-        let lastSelected = null; // Legutóbb kiválasztott név tárolása
-        let tempList = [...names]; // Másolat a nevekről, amit újrahúzáshoz használunk
+    const firebaseConfig = {
+  apiKey: "AIzaSyAuHCMWsyPVpOmQy9UlrSraMGFl0nEslco",
+  authDomain: "karihuzas-d848c.firebaseapp.com",
+  databaseURL: "https://karihuzas-d848c-default-rtdb.firebaseio.com",
+  projectId: "karihuzas-d848c",
+  storageBucket: "karihuzas-d848c.firebasestorage.app",
+  messagingSenderId: "131356054270",
+  appId: "1:131356054270:web:2996f46f0d6e0db9b1cbaf",
+  measurementId: "G-GB3BFBH2ZN"
+};
 
-        // Számláló frissítése
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(app);
+
+        let namesRef = db.ref('names');
+        let names = [];
+        let lastSelected = null;
+
+        // Betöltjük a neveket a Firebase-ből
+        namesRef.once('value', snapshot => {
+            names = snapshot.val() || ["Ákos", "Bálint", "Karcsi", "Gergő", "Máté", "Mlado", "Levi", "Nick", "Csani", "Zoli"];
+            updateCounter();
+        });
+
         function updateCounter() {
             const counterDiv = document.getElementById('counter');
             counterDiv.textContent = `Hátralévő nevek: ${names.length}`;
         }
 
-        // Véletlenszerű név kiválasztása és eltávolítása
         function pickRandomName() {
             if (names.length === 0) {
                 document.getElementById('result').textContent = "Nincs több név!";
@@ -92,24 +112,21 @@
             document.getElementById('result').textContent = `Az ember, akit ajándékozol: ${lastSelected}`;
             document.getElementById('result').style.color = "red"; // Piros szín
             names.splice(randomIndex, 1); // Törli a kiválasztott nevet
-            tempList = [...names]; // Frissíti az újrahúzáshoz használt másolatot
-            updateCounter(); // Számláló frissítése
+            namesRef.set(names); // Frissítjük az adatokat a Firebase-ben
+            updateCounter();
         }
 
-        // Újrahúzás egy másik névvel
         function reroll() {
-            if (tempList.length === 0) {
+            if (names.length === 0) {
                 document.getElementById('result').textContent = "Nincs több név az újrahúzáshoz!";
                 return;
             }
-            const randomIndex = Math.floor(Math.random() * tempList.length);
-            const rerolledName = tempList[randomIndex];
+            const randomIndex = Math.floor(Math.random() * names.length);
+            const rerolledName = names[randomIndex];
             document.getElementById('result').textContent = `Újrahúzott név: ${rerolledName}`;
-            tempList.splice(randomIndex, 1); // Törli a nevet az újrahúzáshoz használt másolatból
+            names.splice(randomIndex, 1);
+            namesRef.set(names); // Frissítjük a Firebase-ben
         }
-
-        // Az oldal betöltésekor frissítjük a számlálót
-        updateCounter();
     </script>
 </body>
 </html>
